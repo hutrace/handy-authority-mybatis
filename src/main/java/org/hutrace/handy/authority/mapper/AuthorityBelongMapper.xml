@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="mapper.authority.AuthorityBelongMapper">
+	
+	<insert id="insert" parameterType="com.wayakeji.fastserver.authority.params.AuthorityBelongAdd">
+		INSERT INTO `authority_user_belong` (
+			`belong`, `explain`
+		)VALUES (
+			#{belong}, #{explain}
+		)
+	</insert>
+	
+	<select id="selectAll" resultType="java.util.Map">
+		SELECT
+			*
+		FROM `authority_user_belong`
+	</select>
+	
+	<delete id="delete" parameterType="com.wayakeji.fastserver.authority.params.AuthorityBelongDel">
+		DELETE FROM `authority_user_belong`
+		WHERE `belong` = #{belong}
+	</delete>
+	
+</mapper>

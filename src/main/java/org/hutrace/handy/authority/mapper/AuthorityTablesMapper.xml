@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="mapper.authority.AuthorityTablesMapper">
+	
+	<select id="showTable" parameterType="string" resultType="string">
+		SHOW TABLES LIKE #{tableName}
+	</select>
+	
+	<insert id="createAuthorityUserBelong">
+		CREATE TABLE `authority_user_belong` (
+			`belong` VARCHAR (32) NOT NULL,
+			`explain` VARCHAR (64) COMMENT '说明',
+			PRIMARY KEY (`belong`)
+		);
+		ALTER TABLE `authority_user_belong` ENGINE=INNODB;
+		INSERT INTO `authority_user_belong` VALUES ('back', '后台账号');
+	</insert>
+	
+	<!-- 创建user表 -->
+	<insert id="createAuthorityUser">
+		CREATE TABLE `authority_user` (
+			`id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+			`username` VARCHAR (64) NOT NULL COMMENT '用户名',
+			`phone` VARCHAR (12) COMMENT '电话',
+			`email` VARCHAR (64) COMMENT '邮箱',
+			`password` VARCHAR (64) NOT NULL COMMENT '密码摘要',
+			`salt` VARCHAR (64) NOT NULL COMMENT '密码盐',
+			`mix` VARCHAR (128) NOT NULL COMMENT '密码混淆',
+			`nickname` VARCHAR (128) NOT NULL COMMENT '用户昵称',
+			`secret` VARCHAR (32) NOT NULL COMMENT '密钥，用于加解密/签名',
+			`inviteCode` VARCHAR (32) NOT NULL COMMENT '邀请码',
+			`inviteCodeFrom` VARCHAR (32) COMMENT '被邀请码',
+			`organization` VARCHAR (64) COMMENT '组织',
+			`enabled` TINYINT NOT NULL COMMENT '是否启用，1-肯定，0-否定',
+			`belong` VARCHAR (32) COMMENT '用户是属于哪个域的？如后台管理用户、小程序用户、API用户等',
+			`createTime` DATETIME COMMENT '创建时间',
+			`createIp` VARCHAR (32) COMMENT '创建IP',
+			`loginTime` DATETIME COMMENT '最后登录时间',
+			`loginIp` VARCHAR (32) COMMENT '最后登录IP',
+			`addUid` BIGINT COMMENT '创建人ID',
+			`addRid` INT COMMENT '创建人角色ID',
+			PRIMARY KEY (`id`)
+		);
+		ALTER TABLE `authority_user` ENGINE=INNODB;
+		ALTER TABLE `authority_user` AUTO_INCREMENT=100000000;
+		ALTER TABLE `authority_user` ADD UNIQUE INDEX (`username`);
+	</insert>
+	
+	<insert id="createAuthorityLoginHistory">
+		CREATE TABLE `authority_login_history` (
+			`id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键(自增)',
+			`userId` BIGINT NOT NULL COMMENT '用户主键',
+			`time` DATETIME NOT NULL COMMENT '时间',
+			`ip` VARCHAR(16) NOT NULL COMMENT 'IP',
+			`status` TINYINT NOT NULL COMMENT '状态，0-成功/1-账号密码不匹配/2-用户已被禁用/3-登陆次数过多,账号暂时锁定',
+			`explain` VARCHAR(128) COMMENT '说明'
+		);
+		ALTER TABLE `authority_login_history` ENGINE=INNODB;
+	</insert>
+	
+	<insert id="createAuthorityModule">
+		CREATE TABLE `authority_module` (
+			`id` INT PRIMARY KEY AUTO_INCREMENT,
+			`pid` INT,
+			`name` VARCHAR(64) NOT NULL COMMENT '名称',
+			`type` TINYINT NOT NULL COMMENT '1-目录，2-菜单，3-页面，4-操作（对应api）',
+			`aid` INT COMMENT 'api的id',
+			`page` VARCHAR(128) DEFAULT NULL COMMENT '页面地址',
+			`explain` VARCHAR(128) DEFAULT NULL COMMENT '说明',
+			`sequence` INT COMMENT '排序号',
+			KEY `aid` (`aid`),
+			CONSTRAINT `authority_module_ibfk_1` FOREIGN KEY (`aid`) REFERENCES `authority_api` (`id`)
+		);
+		ALTER TABLE `authority_module` ENGINE=INNODB;
+		insert into `authority_module` values('1',NULL,'权限管理','2',NULL,NULL,'权限管理菜单','1');
+		insert into `authority_module` values('2','1','用户来源管理','3',NULL,'/authority/belong','用户来源管理页面','1');
+		insert into `authority_module` values('3','1','用户管理','3',NULL,'/authority/user','用户管理页面','2');
+		insert into `authority_module` values('4','1','模块管理','3',NULL,'/authority/module','模块管理页面','3');
+		insert into `authority_module` values('5','1','角色管理','3',NULL,'/authority/role','角色管理页面','4');
+		insert into `authority_module` values('6','2','查询所有用户来源','4','1',NULL,'查询所有用户来源',NULL);
+		insert into `authority_module` values('7','2','新增用户来源','4','2',NULL,'新增用户来源',NULL);
+		insert into `authority_module` values('8','2','删除用户来源','4','3',NULL,'删除用户来源',NULL);
+		insert into `authority_module` values('9','3','分页查询用户','4','4',NULL,'分页查询用户，该查询会根据当前登陆用户查询当前登陆用户可操作的用户',NULL);
+		insert into `authority_module` values('10','3','新增用户','4','5',NULL,'新增用户，该api会保存与绑定当前用户与当前用户所属角色至创建的用户。',NULL);
+		insert into `authority_module` values('11','3','修改用户可用状态','4','6',NULL,'修改用户可用状态，1表示可用，0表示禁用，该api仅允许传入0或1。',NULL);
+		insert into `authority_module` values('12','3','重置用户密码','4','7',NULL,'重置用户密码，该api适用于管理员重置用户密码，该api不需要传入之前的密码，只需要指定用于与新密码即可。',NULL);
+		insert into `authority_module` values('14','4','查询所有模块','4','13',NULL,'查询所有模块（包括目录、菜单、页面、操作）',NULL);
+		insert into `authority_module` values('15','4','新增模块','4','14',NULL,'新增模块，根据type值判断新增的类型，1表示目录，2表示菜单，3表示页面，4表示操作',NULL);
+		insert into `authority_module` values('16','4','修改模块','4','15',NULL,'修改模块',NULL);
+		insert into `authority_module` values('17','4','删除模块','4','16',NULL,'删除模块',NULL);
+		insert into `authority_module` values('18','4','查询所有api接口','4','10',NULL,'查询所有api接口',NULL);
+		insert into `authority_module` values('19','4','新增api接口','4','9',NULL,'新增api接口',NULL);
+		insert into `authority_module` values('20','4','修改api接口','4','11',NULL,'修改api接口',NULL);
+		insert into `authority_module` values('21','4','删除api接口','4','12',NULL,'删除api接口',NULL);
+		insert into `authority_module` values('22','4','修改模块的序号','4','17',NULL,'修改菜单&amp;页面的序号',NULL);
+		insert into `authority_module` values('23','5','新增角色','4','19',NULL,'新增角色',NULL);
+		insert into `authority_module` values('24','5','修改角色','4','22',NULL,'修改角色',NULL);
+		insert into `authority_module` values('25','5','分页查询角色','4','21',NULL,'分页查询角色列表，接口会根据当前登陆的用户判断，查询当前角色下可管理的下一级（不会查询多级）角色',NULL);
+		insert into `authority_module` values('26','5','删除角色','4','20',NULL,'删除角色，删除角色会删除角色的子、子子、子子子、...角色，直到没有子角色为止，该接口是一个非常危险的操作接口，删除后是不可逆的',NULL);
+		insert into `authority_module` values('27','5','查询角色下绑定的用户','4','23',NULL,'查询角色下绑定的用户，系统根据当前请求的用户角色ID查询该角色下已经绑定的用户',NULL);
+		insert into `authority_module` values('28','5','查询角色下未绑定角色的用户','4','8',NULL,'根据当前登陆用户的角色id查询当前角色下可管理的未被绑定角色的用户（有点绕哇？），该api不需要传入参数，系统会自动取登陆用户的缓存角色id。',NULL);
+		insert into `authority_module` values('29','5','保存角色下的用户','4','24',NULL,'保存角色下的用户，保存角色下的用户，如果不是超管会验证传入的rid是否正确，以及添加的用户列表是否是当前用户可以操作的用户',NULL);
+		insert into `authority_module` values('30','5','查询角色下绑定的权限','4','25',NULL,'查询当前角色下绑定的权限，系统根据当前请求的用户角色ID查询该角色下已经绑定的权限',NULL);
+		insert into `authority_module` values('31','5','查询角色下包含的模块','4','18',NULL,'根据角色id查询所有模块，该api接口不需要传入参数，系统会根据当前登陆用户自动获取缓存角色id',NULL);
+		insert into `authority_module` values('32','5','保存角色下的权限','4','26',NULL,'保存角色下的权限，当前操作会验证是否是超管，如果不是超管会验证传入的rid是否正确，以及添加的权限列表是否是当前用户可以操作的权限',NULL);
+		insert into `authority_module` values('33',NULL,'系统管理','2',NULL,NULL,'系统管理','2');
+		insert into `authority_module` values('34','33','日志管理','3',NULL,'/system/log','日志管理页面','1');
+		insert into `authority_module` values('35','34','分页查询日志','4','27',NULL,'分页查询日志，当前版本为了节省空间没有使用缓存，当数据非常非常多的时候查询效率可能较慢',NULL);
+		insert into `authority_module` values('36','33','压力测试','3',NULL,'/system/stress.test','压力测试页面','2');
+		insert into `authority_module` values('37','36','简单测试接口','4','28',NULL,'简单压力测试接口，该接口用于简单的压力测试。',NULL);
+		insert into `authority_module` values('38','3','查询所有用户来源','4','1',NULL,'查询所有用户来源',NULL);
+	</insert>
+	
+	<insert id="createAuthorityApi">
+		CREATE TABLE `authority_api` (
+			`id` INT PRIMARY KEY AUTO_INCREMENT,
+			`api` VARCHAR(128) NOT NULL COMMENT 'api地址',
+			`method` VARCHAR(16) NOT NULL COMMENT 'api请求方式',
+			`quote` TINYINT NOT NULL DEFAULT '0' COMMENT '引用次数',
+			`explain` VARCHAR(256) DEFAULT NULL COMMENT '说明'
+		);
+		ALTER TABLE `authority_api` ENGINE=INNODB;
+		insert into `authority_api` values('1','/authority/belong','GET','1','查询所有用户来源');
+		insert into `authority_api` values('2','/authority/belong','POST','1','新增用户来源');
+		insert into `authority_api` values('3','/authority/belong','DELETE','1','删除用户来源');
+		insert into `authority_api` values('4','/authority/user','GET','1','分页查询用户，该查询会根据当前登陆用户查询当前登陆用户可操作的用户');
+		insert into `authority_api` values('5','/authority/user','POST','1','新增用户，该api会保存与绑定当前用户与当前用户所属角色至创建的用户。');
+		insert into `authority_api` values('6','/authority/user/enabled','PATCH','1','修改用户可用状态，1表示可用，0表示禁用，该api仅允许传入0或1。');
+		insert into `authority_api` values('7','/authority/user/password','PATCH','1','重置用户密码，该api适用于管理员重置用户密码，该api不需要传入之前的密码，只需要指定用于与新密码即可。');
+		insert into `authority_api` values('8','/authority/user/byrid','GET','1','根据当前登陆用户的角色id查询当前角色下可管理的未被绑定角色的用户（有点绕哇？），该api不需要传入参数，系统会自动取登陆用户的缓存角色id。');
+		insert into `authority_api` values('9','/authority/module/api','POST','1','新增api接口');
+		insert into `authority_api` values('10','/authority/module/api','GET','1','查询所有api接口');
+		insert into `authority_api` values('11','/authority/module/api','PUT','1','修改api接口');
+		insert into `authority_api` values('12','/authority/module/api','DELETE','1','删除api接口');
+		insert into `authority_api` values('13','/authority/module','GET','1','查询所有模块（包括目录、菜单、页面、操作）');
+		insert into `authority_api` values('14','/authority/module','POST','1','新增模块，根据type值判断新增的类型，1表示目录，2表示菜单，3表示页面，4表示操作');
+		insert into `authority_api` values('15','/authority/module','PUT','1','修改模块');
+		insert into `authority_api` values('16','/authority/module','DELETE','1','删除模块');
+		insert into `authority_api` values('17','/authority/module/sequence','PATCH','1','修改菜单&amp;页面的序号');
+		insert into `authority_api` values('18','/authority/module/byrid','GET','1','根据角色id查询所有模块，该api接口不需要传入参数，系统会根据当前登陆用户自动获取缓存角色id');
+		insert into `authority_api` values('19','/authority/role','POST','1','新增角色');
+		insert into `authority_api` values('20','/authority/role','DELETE','1','删除角色，删除角色会删除角色的子、子子、子子子、...角色，直到没有子角色为止，该接口是一个非常危险的操作接口，删除后是不可逆的');
+		insert into `authority_api` values('21','/authority/role','GET','1','分页查询角色列表，接口会根据当前登陆的用户判断，查询当前角色下可管理的下一级（不会查询多级）角色');
+		insert into `authority_api` values('22','/authority/role','PUT','1','修改角色');
+		insert into `authority_api` values('23','/authority/role/user','GET','1','查询角色下绑定的用户，系统根据当前请求的用户角色ID查询该角色下已经绑定的用户');
+		insert into `authority_api` values('24','/authority/role/user','POST','1','保存角色下的用户，保存角色下的用户，如果不是超管会验证传入的rid是否正确，以及添加的用户列表是否是当前用户可以操作的用户');
+		insert into `authority_api` values('25','/authority/role/module','GET','1','查询当前角色下绑定的权限，系统根据当前请求的用户角色ID查询该角色下已经绑定的权限');
+		insert into `authority_api` values('26','/authority/role/module','POST','1','保存角色下的权限，当前操作会验证是否是超管，如果不是超管会验证传入的rid是否正确，以及添加的权限列表是否是当前用户可以操作的权限');
+		insert into `authority_api` values('27','/system/log','GET','1','分页查询日志，当前版本为了节省空间没有使用缓存，当数据非常非常多的时候查询效率可能较慢');
+		insert into `authority_api` values('28','/system/stress.test/simple','POST','1','简单压力测试接口，该接口用于简单的压力测试。');
+	</insert>
+	
+	<insert id="createAuthorityRole" parameterType="java.util.Map">
+		CREATE TABLE `authority_role` (
+			`id` INT PRIMARY KEY AUTO_INCREMENT,
+			`pid` INT,
+			`name` VARCHAR(64),
+			`explain` VARCHAR(128) DEFAULT NULL,
+			`clientId` BIGINT(20) NOT NULL,
+			`addTime` DATETIME
+		);
+		ALTER TABLE `authority_role` ENGINE=INNODB;
+		insert into `authority_role` values('1',NULL,'系统超管','最最最顶级系统超管',#{adminId},now());
+	</insert>
+	
+	<insert id="createAuthorityRoleUser" parameterType="java.util.Map">
+		CREATE TABLE `authority_role_user` (
+			`id` INT PRIMARY KEY AUTO_INCREMENT,
+			`rid` INT NOT NULL COMMENT '角色id',
+			`uid` BIGINT NOT NULL COMMENT '用户id'
+		);
+		ALTER TABLE `authority_role_user` ENGINE=INNODB;
+		insert into `authority_role_user` values('1','1',#{adminId});
+	</insert>
+	
+	<insert id="createAuthorityRoleModule">
+		CREATE TABLE `authority_role_module` (
+			`id` INT PRIMARY KEY AUTO_INCREMENT,
+			`rid` INT NOT NULL COMMENT '角色id',
+			`mid` INT NOT NULL COMMENT '模块id'
+		);
+		ALTER TABLE `authority_role_module` ENGINE=INNODB;
+		insert into `authority_role_module` values('1','1','1');
+		insert into `authority_role_module` values('2','1','2');
+		insert into `authority_role_module` values('3','1','6');
+		insert into `authority_role_module` values('4','1','7');
+		insert into `authority_role_module` values('5','1','8');
+		insert into `authority_role_module` values('6','1','3');
+		insert into `authority_role_module` values('7','1','9');
+		insert into `authority_role_module` values('8','1','10');
+		insert into `authority_role_module` values('9','1','11');
+		insert into `authority_role_module` values('10','1','12');
+		insert into `authority_role_module` values('11','1','4');
+		insert into `authority_role_module` values('12','1','14');
+		insert into `authority_role_module` values('13','1','15');
+		insert into `authority_role_module` values('14','1','16');
+		insert into `authority_role_module` values('15','1','17');
+		insert into `authority_role_module` values('16','1','18');
+		insert into `authority_role_module` values('17','1','19');
+		insert into `authority_role_module` values('18','1','20');
+		insert into `authority_role_module` values('19','1','21');
+		insert into `authority_role_module` values('20','1','22');
+		insert into `authority_role_module` values('21','1','5');
+		insert into `authority_role_module` values('22','1','23');
+		insert into `authority_role_module` values('23','1','24');
+		insert into `authority_role_module` values('24','1','25');
+		insert into `authority_role_module` values('25','1','26');
+		insert into `authority_role_module` values('26','1','27');
+		insert into `authority_role_module` values('27','1','28');
+		insert into `authority_role_module` values('28','1','29');
+		insert into `authority_role_module` values('29','1','30');
+		insert into `authority_role_module` values('30','1','31');
+		insert into `authority_role_module` values('31','1','32');
+		insert into `authority_role_module` values('32','1','33');
+		insert into `authority_role_module` values('33','1','34');
+		insert into `authority_role_module` values('34','1','35');
+		insert into `authority_role_module` values('35','1','36');
+		insert into `authority_role_module` values('36','1','37');
+		insert into `authority_role_module` values('37','1','38');
+	</insert>
+	
+	<insert id="createSimpleTest">
+		CREATE TABLE `system_stress_test_simple` (
+			`id` INT PRIMARY KEY AUTO_INCREMENT,
+			`data` TEXT COMMENT '数据',
+			`time` DATETIME COMMENT '数据添加时间'
+		);
+		ALTER TABLE `system_stress_test_simple` ENGINE=INNODB;
+	</insert>
+	
+	<insert id="insertAuthorityUser" parameterType="com.wayakeji.fastserver.authority.bean.AuthorityUserBean">
+		INSERT INTO `authority_user` (
+			`id`, `username`, `phone`,
+			`email`, `password`, `salt`,
+			`mix`, `nickname`, `secret`,
+			`inviteCode`, `inviteCodeFrom`, `organization`,
+			`enabled`, `belong`, `createTime`,
+			`createIp`, `loginTime`, `loginIp`
+		)VALUES (
+			#{id}, #{username}, #{phone},
+			#{email}, #{password}, #{salt},
+			#{mix}, #{nickname}, #{secret},
+			#{inviteCode}, #{inviteCodeFrom}, #{organization},
+			#{enabled}, #{belong}, #{createTime},
+			#{createIp}, #{loginTime}, #{loginIp}
+		);
+		ALTER TABLE `authority_user` AUTO_INCREMENT=100000000;
+	</insert>
+	
+	<delete id="clearTables">
+		DROP TABLE IF EXISTS `authority_login_history`;
+		DROP TABLE IF EXISTS `authority_user`;
+		DROP TABLE IF EXISTS `authority_user_belong`;
+		DROP TABLE IF EXISTS `authority_module`;
+		DROP TABLE IF EXISTS `authority_api`;
+		DROP TABLE IF EXISTS `authority_role`;
+		DROP TABLE IF EXISTS `authority_role_user`;
+		DROP TABLE IF EXISTS `authority_role_module`;
+		DROP TABLE IF EXISTS `system_stress_test_simple`;
+	</delete>
+	
+	<select id="selectCacheApis" resultType="com.wayakeji.fastserver.authority.bean.AuthorityApiCacheVO">
+		SELECT
+			a.`id`,
+			b.`api`,
+			b.`method`
+		FROM `authority_module` a
+		LEFT JOIN `authority_api` b ON b.`id` = a.`aid`
+		WHERE a.`type` = 4
+	</select>
+	
+</mapper>

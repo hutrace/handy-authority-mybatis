@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="mapper.authority.AuthorityLoginMapper">
+	
+	<select id="selectOneUser" parameterType="java.util.Map"
+		resultType="com.wayakeji.fastserver.authority.bean.AuthorityUserBean">
+		SELECT
+			*
+		FROM `authority_user`
+		WHERE ${type} = #{value}
+	</select>
+	
+	<select id="selectLoginErrorCount" parameterType="java.util.Map"
+		resultType="int">
+		SELECT
+			COUNT(`id`)
+		FROM `authority_login_history`
+		WHERE `time` >= DATE_ADD(NOW(), INTERVAL - #{time} SECOND)
+		AND `userId` = #{userId}
+		AND `status` IN (1, 2)
+	</select>
+	
+	<insert id="insertLoginHistory" parameterType="com.wayakeji.fastserver.authority.bean.AuthorityLoginHistoryBean">
+		INSERT INTO `authority_login_history` (
+			`userId`, `time`, `ip`,
+			`status`, `explain`
+		)VALUES (
+			#{userId}, #{time}, #{ip},
+			#{status}, #{explain}
+		)
+	</insert>
+	
+	<update id="updateUserLoginInfo" parameterType="java.util.Map">
+		UPDATE
+			`authority_user`
+		SET
+			`loginTime` = #{loginTime},
+			`loginIp` = #{loginIp}
+		WHERE `id` = #{id}
+	</update>
+	
+	<update id="updatePassword" parameterType="com.wayakeji.fastserver.authority.bean.AuthorityUserBean">
+		UPDATE
+			`authority_user`
+		SET
+			`password` = #{password},
+			`mix` = #{mix}
+		WHERE `id` = #{id}
+	</update>
+	
+	<select id="selectRoleInfoByClientId" parameterType="long"
+		resultType="java.util.Map">
+		SELECT
+			b.`id` AS bufRoleId,
+			b.`pid` AS bufRolePid
+		FROM `authority_role_user` a
+		LEFT JOIN `authority_role` b ON b.`id` = a.`rid`
+		WHERE a.`uid` = #{clientId}
+	</select>
+	
+	<select id="selectMenusByUid" parameterType="long"
+		resultType="java.util.Map">
+		SELECT
+			c.`id`,
+			c.`pid`,
+			c.`name`,
+			c.`type`,
+			c.`page`,
+			c.`sequence`
+		FROM `authority_role_user` a
+		LEFT JOIN `authority_role_module` b ON b.`rid` = a.`rid`
+		LEFT JOIN `authority_module` c ON c.`id` = b.`mid`
+		WHERE c.`type` = 2
+		AND a.`uid` = #{id}
+	</select>
+	
+	<select id="selectPagesByUid" parameterType="long"
+		resultType="java.util.Map">
+		SELECT
+			c.`id`,
+			c.`pid`,
+			c.`name`,
+			c.`type`,
+			c.`page`,
+			c.`sequence`
+		FROM `authority_role_user` a
+		LEFT JOIN `authority_role_module` b ON b.`rid` = a.`rid`
+		LEFT JOIN `authority_module` c ON c.`id` = b.`mid`
+		WHERE c.`type` = 3
+		AND a.`uid` = #{id}
+	</select>
+	
+	<select id="selectApisByUid" parameterType="long"
+		resultType="com.wayakeji.fastserver.authority.bean.AuthorityApiVO">
+		SELECT
+			c.`id`,
+			c.`pid`,
+			c.`name`,
+			d.`api`,
+			d.`method`
+		FROM `authority_role_user` a
+		LEFT JOIN `authority_role_module` b ON b.`rid` = a.`rid`
+		LEFT JOIN `authority_module` c ON c.`id` = b.`mid`
+		LEFT JOIN `authority_api` d ON d.`id` = c.`aid`
+		WHERE c.`type` = 4
+		AND a.`uid` = #{id}
+	</select>
+	
+</mapper>

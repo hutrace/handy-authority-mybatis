@@ -1,0 +1,14 @@
+authority.loader.table.exist = Check that the table {} already exists and does not need to be created
+authority.loader.table.notexist = The check table {} does not exist and needs to be created
+authority.loader.user = Initializing the super user successfully, account number: {}, password: {}
+authority.loader.conflict.root = The cache root folder you set conflicts, existing files, {}
+authority.loader.conflict.user = The user cache folder you set conflicts, existing files, {}
+authority.loader.conflict.authority = The permissions you set cache folder conflict, existing files, {}
+authority.loader.notfound.user = The user cache directory you set does not exist, {}
+authority.loader.notfound.authority = The permissions cache directory you set does not exist, {}
+authority.loader.notfloder.user = The user cache directory you set is not a folder, {}
+authority.loader.notfloder.authority = The permissions cache directory you set is not a folder, {}
+authority.loader.path.user = The user cache directory path is: {}
+authority.loader.path.authority = The permissions cache directory path is: {}
+authority.req.sign.info = Incoming signature: {}, {} signer signature: {}
+authority.resolver.scpsat.encode = Encryption failed

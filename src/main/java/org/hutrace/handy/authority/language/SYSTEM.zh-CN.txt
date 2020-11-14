@@ -1,0 +1,14 @@
+authority.loader.table.exist = 检查表{}已存在，不需要创建
+authority.loader.table.notexist = 检查表{}不存在，需要创建
+authority.loader.user = 初始化超级用户成功，账号：{}，密码：{}
+authority.loader.conflict.root = 你设置的缓存根文件夹冲突，已有存在的文件，{}
+authority.loader.conflict.user = 你设置的用户缓存文件夹冲突，已有存在的文件，{}
+authority.loader.conflict.authority = 你设置的权限缓存文件夹冲突，已有存在的文件，{}
+authority.loader.notfound.user = 你设置的用户缓存目录不存在，{}
+authority.loader.notfound.authority = 你设置的权限缓存目录不存在，{}
+authority.loader.notfloder.user = 你设置的用户缓存目录不是文件夹，{}
+authority.loader.notfloder.authority = 你设置的权限缓存目录不是文件夹，{}
+authority.loader.path.user = 用户缓存目录路径是：{}
+authority.loader.path.authority = 权限缓存目录路径是：{}
+authority.req.sign.info = 传入的签名：{}，{}签名器签名：{}
+authority.resolver.scpsat.encode = 加密失败

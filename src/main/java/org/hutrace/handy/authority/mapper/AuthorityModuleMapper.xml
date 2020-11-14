@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="mapper.authority.AuthorityModuleMapper">
+	
+	<insert id="insertApi" parameterType="com.wayakeji.fastserver.authority.params.AuthorityApiAdd"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO `authority_api` (
+			`api`, `method`, `quote`, `explain`
+		)VALUES (
+			#{api}, #{method}, #{quote}, #{explain}
+		)
+	</insert>
+	
+	<select id="selectApiAll" resultType="java.util.Map">
+		SELECT
+			*
+		FROM `authority_api`
+		ORDER BY `quote`
+	</select>
+	
+	<update id="updateApiQuote" parameterType="com.wayakeji.fastserver.authority.params.AuthorityModuleDel">
+		UPDATE
+			`authority_api`
+		SET
+			`quote` =
+		<foreach collection="apiQuotes" item="item" separator=" " open="CASE id" close="END">
+			WHEN #{item.id} THEN `quote` + #{item.quote}
+		</foreach>
+		WHERE ID IN
+		<foreach collection="apiQuotes" item="item" open="(" close=")" separator=",">
+			#{item.id}
+		</foreach>
+	</update>
+	
+	<update id="updateApiQuotePushOne" parameterType="int">
+		UPDATE
+			`authority_api`
+		SET
+			`quote` = `quote` + 1
+		WHERE `id` = #{id}
+	</update>
+	
+	<update id="updateApi" parameterType="com.wayakeji.fastserver.authority.params.AuthorityApiPut">
+		UPDATE
+			`authority_api`
+		SET
+			`api` = #{api},
+			`method` = #{method},
+			`explain` = #{explain}
+		WHERE `id` = #{id}
+	</update>
+	
+	<delete id="deleteApi" parameterType="int">
+		DELETE FROM `authority_api`
+		WHERE `id` = #{id};
+	</delete>
+	
+	<update id="deleteModuleByApiId" parameterType="int">
+		DELETE FROM `authority_module`
+		WHERE `aid` = #{aid}
+	</update>
+	
+	<insert id="insertModule" parameterType="com.wayakeji.fastserver.authority.params.AuthorityModuleAdd"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO `authority_module` (
+			`pid`, `name`, `type`,
+			`aid`, `page`, `explain`,
+			`sequence`
+		)VALUES (
+			#{pid}, #{name}, #{type},
+			#{aid}, #{page}, #{explain},
+			#{sequence}
+		)
+	</insert>
+	
+	<select id="selectModuleAll" resultType="java.util.Map">
+		SELECT
+			a.*,
+			b.`api`,
+			b.`method`
+		FROM `authority_module` a
+		LEFT JOIN `authority_api` b ON b.`id` = a.`aid`
+	</select>
+	
+	<delete id="deleteModules" parameterType="com.wayakeji.fastserver.authority.params.AuthorityModuleDel">
+		DELETE FROM `authority_module`
+		WHERE `id` IN
+		<foreach collection="ids" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>
+	</delete>
+	
+	<update id="updateModule" parameterType="com.wayakeji.fastserver.authority.params.AuthorityModulePut">
+		UPDATE
+			`authority_module`
+		SET
+			`name` = #{name},
+			`type` = #{type},
+			`page` = #{page},
+			`explain` = #{explain}
+		WHERE `id` = #{id}
+	</update>
+	
+	<update id="updateModuleSequence" parameterType="com.wayakeji.fastserver.authority.params.AuthorityModuleSequencePatch">
+		UPDATE
+			`authority_module`
+		SET
+			`sequence` =
+		<foreach collection="sequences" item="item" separator=" " open="CASE id" close="END">
+			WHEN #{item.id} THEN #{item.sequence}
+		</foreach>
+		WHERE (`type` = 2 OR `type` = 3)
+		AND `id` IN
+		<foreach collection="sequences" item="item" open="(" close=")" separator=",">
+			#{item.id}
+		</foreach>
+	</update>
+	
+	<select id="selectRoleModuleAll" resultType="java.util.Map">
+		SELECT
+			`id`,
+			`pid`,
+			`name`,
+			`sequence`
+		FROM `authority_module`
+	</select>
+	
+	<select id="selectModulesByRid" parameterType="java.util.Map"
+		resultType="java.util.Map">
+		SELECT
+			b.`id`,
+			b.`pid`,
+			b.`name`,
+			b.`sequence`
+		FROM `authority_role_module` a
+		LEFT JOIN `authority_module` b ON b.`id` = a.`mid`
+		<where>
+			<if test="rid != null and rid != 0">
+				a.`rid` = #{rid}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectModuleIdsByRid" parameterType="int"
+		resultType="int">
+		SELECT
+			a.`id`
+		FROM `authority_module` a
+		LEFT JOIN `authority_role_module` b ON b.`mid` = a.`id`
+		WHERE `rid` = #{rid}
+	</select>
+	
+</mapper>

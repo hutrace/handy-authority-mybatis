@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="mapper.authority.AuthorityUserMapper">
+	
+	<insert id="insert" parameterType="com.wayakeji.fastserver.authority.bean.AuthorityUserBean"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO `authority_user` (
+			`username`, `phone`,
+			`email`, `password`, `salt`,
+			`mix`, `nickname`, `secret`,
+			`inviteCode`, `inviteCodeFrom`, `organization`,
+			`enabled`, `belong`, `createTime`,
+			`createIp`, `loginTime`, `loginIp`,
+			`addUid`, `addRid`
+		)VALUES (
+			#{username}, #{phone},
+			#{email}, #{password}, #{salt},
+			#{mix}, #{nickname}, #{secret},
+			#{inviteCode}, #{inviteCodeFrom}, #{organization},
+			#{enabled}, #{belong}, #{createTime},
+			#{createIp}, #{loginTime}, #{loginIp},
+			#{addUid}, #{addRid}
+		)
+	</insert>
+	
+	<select id="query" parameterType="com.wayakeji.fastserver.authority.params.AuthorityUserGet"
+		resultType="com.wayakeji.fastserver.authority.bean.AuthorityUserBean">
+		SELECT
+			*
+		FROM `authority_user`
+		<where>
+			<if test="username != null and username != ''">
+				AND `username` LIKE CONCAT('%', #{username}, '%')
+			</if>
+			<if test="email != null and email != ''">
+				AND `email` LIKE CONCAT('%', #{email}, '%')
+			</if>
+			<if test="phone != null and phone != ''">
+				AND `phone` LIKE CONCAT('%', #{phone}, '%')
+			</if>
+			<if test="nickname != null and nickname != ''">
+				AND `nickname` LIKE CONCAT('%', #{nickname}, '%')
+			</if>
+			<if test="belong != null and belong != ''">
+				AND `belong` = #{belong}
+			</if>
+			<if test="enabled != null">
+				AND `enabled` = #{enabled}
+			</if>
+			<if test="addRid != null and addRid != 0">
+				AND `addRid` = #{addRid}
+			</if>
+			<if test="addUid != null and addUid != 0">
+				AND `addUid` = #{addUid}
+			</if>
+		</where>
+		LIMIT #{pageStart}, #{pageSize}
+	</select>
+	<select id="queryCount" parameterType="com.wayakeji.fastserver.authority.params.AuthorityUserGet"
+		resultType="int">
+		SELECT
+			COUNT(`id`)
+		FROM `authority_user`
+		<where>
+			<if test="username != null and username != ''">
+				AND `username` LIKE CONCAT('%', #{username}, '%')
+			</if>
+			<if test="email != null and email != ''">
+				AND `email` LIKE CONCAT('%', #{email}, '%')
+			</if>
+			<if test="phone != null and phone != ''">
+				AND `phone` LIKE CONCAT('%', #{phone}, '%')
+			</if>
+			<if test="nickname != null and nickname != ''">
+				AND `nickname` LIKE CONCAT('%', #{nickname}, '%')
+			</if>
+			<if test="belong != null and belong != ''">
+				AND `belong` = #{belong}
+			</if>
+			<if test="enabled != null">
+				AND `enabled` = #{enabled}
+			</if>
+			<if test="addRid != null and addRid != 0">
+				AND `addRid` = #{addRid}
+			</if>
+			<if test="addUid != null and addUid != 0">
+				AND `addUid` = #{addUid}
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateEnabled" parameterType="com.wayakeji.fastserver.authority.params.AuthorityUserEnabled">
+		UPDATE
+			`authority_user`
+		SET
+			`enabled` = #{enabled}
+		WHERE `id` = #{id}
+	</update>
+	
+	<select id="selectNotRoleByRid" parameterType="java.util.Map"
+		resultType="java.util.Map">
+		SELECT
+			a.`id`,
+			a.`username`
+		FROM `authority_user` a
+		LEFT JOIN `authority_role_user` b ON b.`uid` = a.`id`
+		WHERE b.`id` IS NULL
+		<if test="rid != null and rid != 0">
+			AND a.`addRid` = #{rid}
+		</if>
+	</select>
+	
+	<select id="selectNotRoleUidsByRid" parameterType="int"
+		resultType="long">
+		SELECT
+			a.`id`
+		FROM `authority_user` a
+		LEFT JOIN `authority_role_user` b ON b.`uid` = a.`id`
+		WHERE b.`id` IS NULL
+		AND a.`addRid` = #{rid}
+	</select>
+	
+	<select id="selectUsersByRid" parameterType="int"
+		resultType="java.util.Map">
+		SELECT
+			a.`id`,
+			a.`uid`,
+			a.`rid`,
+			b.`username`
+		FROM
+			`authority_role_user` a
+		LEFT JOIN `authority_user` b ON b.`id` = a.`uid`
+		WHERE a.`rid` = #{rid}
+	</select>
+	
+</mapper>
